@@ -1,9 +1,9 @@
 <resources>
 
-    <string name="app_name">opensrp-client-family</string>
-    <string name="title_family_detail">Family Detail</string>
-    <string name="families">Families</string>
-    <string name="all_families">All Families</string>
+    <string name="app_name">opensrp-client-household</string>
+    <string name="title_family_detail">Household Detail</string>
+    <string name="families">Household</string>
+    <string name="all_families">All Households</string>
 
     <string name="saving_dialog_title">Saving…</string>
     <string name="no_unique_id">No unique ids found. Click on the sync button to get more and if this error persists contact the system admin.</string>
@@ -24,22 +24,22 @@
     <string name="add_member">Add Member</string>
     <string name="sort">Sort</string>
     <string name="home">Home</string>
-    <string name="add_family">Add family</string>
+    <string name="add_family">Add Household</string>
     <string name="scan_qr">Scan QR</string>
     <string name="job_aids">Job Aids</string>
 
     <!-- form -->
-    <string name="add_fam">Add Family</string>
+    <string name="add_fam">Add Household</string>
 
     <!-- register -->
-    <string name="family_head">Family Head</string>
+    <string name="family_head">Household Head</string>
     <string name="primary_care_giver">Primary Caregiver</string>
     <string name="physically_challenged">Physically Challenged</string>
 
 
     <!-- member -->
-    <string name="return_to_all_families">Return to all families</string>
-    <string name="return_to_family_profile">Return to family profile</string>
+    <string name="return_to_all_families">Return to all households</string>
+    <string name="return_to_family_profile">Return to household profile</string>
     <string name="deceased_brackets">(deceased)</string>
     <string name="id_with_value">ID: %1$s</string>
 
@@ -48,9 +48,9 @@
 
     <string name="back">BACK</string>
 
-    <string name="family_title">{0} Family</string>
-    <string name="family_profile_title">%1$s Family</string>
-    <string name="family_profile_title_with_firstname">%1$s %2$s Family</string>
+    <string name="family_title">{0} Household</string>
+    <string name="family_profile_title">%1$s Household</string>
+    <string name="family_profile_title_with_firstname">%1$s %2$s Household</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="abbrv_days">d</string>
