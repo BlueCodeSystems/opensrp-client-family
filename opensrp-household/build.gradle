@@ -1,4 +1,4 @@
-description = 'OpenSRP family client library'
+description = 'Household module - a fork of OpenSRP family client library'
 
 buildscript {
     repositories {
@@ -13,6 +13,7 @@ buildscript {
 apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 jacoco {
     toolVersion = "0.8.0"
@@ -26,8 +27,6 @@ android {
     defaultConfig {
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
-        versionCode Integer.parseInt(project.VERSION_CODE)
-        versionName project.VERSION_NAME
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -145,6 +144,32 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
     ]))
 }
 
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    android.libraryVariants.all { variant ->
+        if (variant.name == 'release') {
+            if (variant.hasProperty('javaCompileProvider')) {
+                // Android 3.3.0+
+                owner.classpath += variant.javaCompileProvider.get().classpath
+            } else {
+                owner.classpath += variant.javaCompile.classpath
+            }
+        }
+    }
+    exclude '**/R.html', '**/R.*.html', '**/index.html'
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    archiveClassifier.set('javadoc')
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
+
 tasks.coveralls {
     dependsOn 'jacocoTestReport'
 }
@@ -154,4 +179,88 @@ coveralls {
     sourceDirs = ["$project.projectDir/src/main/java"]
 }
 
-apply from: '../maven.gradle'
+version = "1.0.0-RELEASE"
+
+def properties = new Properties()
+properties.load(new FileInputStream(rootProject.file("local.properties")))
+
+publishing {
+    publications {
+        Household(MavenPublication) {
+            groupId 'org.smartregister'
+            artifactId getArtifactId()
+            version this.version
+            artifact("$buildDir/outputs/aar/${getArtifactId()}-release.aar")
+            artifact androidJavadocsJar
+            artifact androidSourcesJar
+
+            pom {
+                name = 'Household module - a fork of OpenSRP Family module used to enroll entire household'
+                description = ''
+                url = 'https://github.com/BlueCodeSystems/opensrp-client-household'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+            //Refer to this gist https://gist.github.com/Robyer/a6578e60127418b380ca133a1291f017
+            pom.withXml {
+                final dependenciesNode = asNode().appendNode('dependencies')
+
+                ext.addDependency = { dep, String scope ->
+                    if (dep.group == null || dep.version == null || dep.name == null || dep.name == "unspecified")
+                        return // ignore invalid dependencies
+
+                    final dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dep.group)
+                    dependencyNode.appendNode('artifactId', dep.name)
+                    dependencyNode.appendNode('version', dep.version)
+                    dependencyNode.appendNode('scope', scope)
+
+                    if (!dep.transitive) {
+                        // If this dependency is not transitive, we should force exclude all its dependencies from the POM
+                        final exclusionNode = dependencyNode.appendNode('exclusions').appendNode('exclusion')
+                        exclusionNode.appendNode('groupId', '*')
+                        exclusionNode.appendNode('artifactId', '*')
+                    } else if (!dep.properties.excludeRules.empty) {
+                        // Otherwise add specified exclude rules
+                        final exclusionsNode = dependencyNode.appendNode('exclusions')
+                        dep.properties.excludeRules.each { rule ->
+                            final exclusionNode = exclusionsNode.appendNode('exclusion')
+                            exclusionNode.appendNode('groupId', rule.group ?: '*')
+                            exclusionNode.appendNode('artifactId', rule.module ?: '*')
+                        }
+                    }
+                }
+
+                // List all "implementation" dependencies (for old Gradle)
+                configurations.implementation.getDependencies().each { dep -> addDependency(dep, "implementation") }
+                // List all "api" dependencies (for new Gradle) as "implementation" dependencies
+                configurations.api.getDependencies().each { dep -> addDependency(dep, "implementation") }
+                // List all "implementation" dependencies (for new Gradle) as "runtime" dependencies
+                configurations.implementation.getDependencies().each { dep -> addDependency(dep, "runtime") }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            /**
+             * Configure path of the package repository on Github using the GITHUB_USER_ID and
+             * Git Repository
+             */
+            url = uri("https://github.com/BlueCodeSystems/opensrp-client-household")
+            credentials {
+                /** get credentials from local.properties in root project folder file with
+                 ** gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN otherwise
+                 ** Set env variable GPR_USER & GPR_API_KEY**/
+
+                username = properties['gpr.usr'] ?: System.getenv("GPR_USER")
+                password = properties['gpr.key'] ?: System.getenv("GPR_API_KEY")
+            }
+        }
+    }
+}
