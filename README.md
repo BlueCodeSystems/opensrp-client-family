@@ -48,7 +48,7 @@ Add the library in the dependency section of your application's `build.gradle` f
 ```groovy 
 dependencies {    
    //consume library - use the latest version available on github packages    
-   implementation "org.smartregister:family:1.0.0-RELEASE"    
+   implementation "org.smartregister:family:1.0.0-BCODE-RELEASE"    
    //....    
  } 
  ```   

@@ -179,7 +179,7 @@ coveralls {
     sourceDirs = ["$project.projectDir/src/main/java"]
 }
 
-version = "1.0.0-RELEASE"
+version = "1.0.0-BCODE-RELEASE"
 
 def properties = new Properties()
 properties.load(new FileInputStream(rootProject.file("local.properties")))
